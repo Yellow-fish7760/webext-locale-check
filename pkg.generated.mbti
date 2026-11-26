@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Yellow-fish7760/webext_locale_check"
+
+import {
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn audit(String, String) -> Report
+
+pub fn audit_json(String, String) -> String
+
+// Errors
+
+// Types and methods
+#derive(@json.ToJson)
+pub struct Finding {
+  severity : String
+  side : String
+  key : String
+  code : String
+  detail : String
+}
+
+#derive(@json.ToJson)
+pub struct Report {
+  checked : Int32
+  errors : Int32
+  warnings : Int32
+  findings : Array[Finding]
+}
+
+// Type aliases
+
+// Traits
