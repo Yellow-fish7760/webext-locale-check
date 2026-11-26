@@ -1,0 +1,18 @@
+{
+  "invoicePaid": {
+    "message": "$CUSTOMER$ paid $AMOUNT$.",
+    "placeholders": {
+      "customer": { "content": "$1", "example": "Lin" },
+      "amount": { "content": "$2", "example": "¥128.00" }
+    }
+  },
+  "receiptMail": {
+    "message": "Sent $1 to $2."
+  },
+  "currencyTip": {
+    "message": "Currency: $$"
+  },
+  "syncQueued": {
+    "message": "Waiting to sync"
+  }
+}

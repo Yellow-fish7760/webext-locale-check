@@ -1,0 +1,18 @@
+{
+  "invoicePaid": {
+    "message": "已收到 $CUSTOMER$ 支付的 $AMOUNT$。",
+    "placeholders": {
+      "amount": { "content": "$2" },
+      "customer": { "content": "$1" }
+    }
+  },
+  "receiptMail": {
+    "message": "已向 $2 发送 $1。"
+  },
+  "currencyTip": {
+    "message": "货币符号为 $$"
+  },
+  "syncQueued": {
+    "message": "等待同步"
+  }
+}

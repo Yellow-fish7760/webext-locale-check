@@ -1,0 +1,14 @@
+{
+  "invoicePaid": {
+    "message": "$CUSTOMER$ 已付款。",
+    "placeholders": {
+      "customer": { "content": "$1" }
+    }
+  },
+  "receiptMail": {
+    "message": "已向 $2 发送 $1。"
+  },
+  "currencyTip": {
+    "message": "货币符号为 $$"
+  }
+}
