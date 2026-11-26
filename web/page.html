@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>扩展译文检查</title>
+  <style>
+    :root { color-scheme:light; --ink:#172d26; --muted:#526861; --paper:#f6f8f3; --line:#cbd5c9; --green:#135a42; --red:#8e322b; --amber:#78500f; }
+    * { box-sizing:border-box }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 Inter,"Microsoft YaHei UI","PingFang SC",sans-serif }
+    main { max-width:1024px; margin:auto; padding:clamp(20px,5vw,64px) clamp(16px,5vw,56px) 48px }
+    h1,h2,p { margin:0 }
+    h1 { font-size:clamp(29px,5vw,49px); letter-spacing:-.045em; line-height:1.2; margin-bottom:12px }
+    h2 { font-size:21px; letter-spacing:-.02em }
+    header { border-top:4px solid var(--green); padding-top:23px }
+    .intro { color:var(--muted); max-width:47em }
+    .cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:28px 0 16px }
+    .card { display:block; position:relative; min-width:0; border:1px solid var(--line); border-radius:10px; padding:17px 19px; background:white; cursor:pointer }
+    .card:hover,.card:focus-within { border-color:var(--green) }
+    .card:focus-within,button:focus-visible { outline:3px solid #84b69b; outline-offset:3px }
+    .card-label { display:block; font-size:14px; color:var(--muted) }
+    .filename { display:block; margin:5px 0 12px; font-weight:650; overflow-wrap:anywhere }
+    .pick { display:inline-block; color:var(--green); font-weight:650; font-size:14px; text-decoration:underline; text-underline-offset:4px }
+    input[type=file] { position:absolute; width:1px; height:1px; opacity:0 }
+    .controls { display:flex; flex-wrap:wrap; gap:8px }
+    button { appearance:none; font:inherit; font-size:14px; color:var(--green); background:white; border:1px solid var(--line); padding:7px 13px; border-radius:6px; cursor:pointer }
+    button:hover { border-color:var(--green); background:#f3f7f0 }
+    button:disabled { opacity:.45; cursor:default }
+    .report { margin-top:30px; border-top:1px solid var(--line); padding-top:20px }
+    .report-title { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:5px }
+    .status { color:var(--muted); margin:4px 0 16px }
+    #findings { list-style:none; padding:0; margin:0 }
+    .finding { display:grid; grid-template-columns:auto 1fr; gap:11px; border-top:1px solid var(--line); padding:13px 0; align-items:start }
+    .level { border-radius:4px; padding:1px 8px; font-size:13px; font-weight:650; white-space:nowrap; margin-top:2px }
+    .error { color:var(--red); background:#f8e7e2 }
+    .warning { color:var(--amber); background:#f5edd8 }
+    .where { font-size:13px; color:var(--muted); overflow-wrap:anywhere; margin:1px 0 }
+    .description { overflow-wrap:anywhere }
+    code { font-family:"Cascadia Mono",Consolas,monospace; color:var(--ink) }
+    .clear { border:1px solid #a6c5ad; background:#eaf4e8; border-radius:7px; padding:12px; color:var(--green) }
+    @media(max-width:580px) { .cards { grid-template-columns:1fr; margin-top:20px } .report { margin-top:24px } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>扩展译文检查</h1>
+      <p class="intro">对照浏览器扩展的两份 <code>messages.json</code>，检查译文有没有漏掉金额、姓名等运行时参数。文件只在本机读取。</p>
+    </header>
+    <section aria-label="选择两份语言文件">
+      <div class="cards">
+        <label class="card">
+          <span class="card-label">默认语言文件</span>
+          <span class="filename" id="source-name">未选择文件</span>
+          <span class="pick">选择原文文件</span>
+          <input id="source-file" aria-label="选择原文文件" type="file" accept=".json,application/json">
+        </label>
+        <label class="card">
+          <span class="card-label">待检查的翻译文件</span>
+          <span class="filename" id="translation-name">未选择文件</span>
+          <span class="pick">选择译文文件</span>
+          <input id="translation-file" aria-label="选择译文文件" type="file" accept=".json,application/json">
+        </label>
+      </div>
+      <div class="controls">
+        <button type="button" id="review">查看漏译示例</button>
+        <button type="button" id="fixed">查看修正示例</button>
+      </div>
+    </section>
+    <section class="report" aria-labelledby="report-heading">
+      <div class="report-title"><h2 id="report-heading">检查结果</h2><button type="button" id="save" disabled>导出 JSON 报告</button></div>
+      <p class="status" id="status" aria-live="polite"></p>
+      <ul id="findings"></ul>
+    </section>
+    <noscript>请在支持 JavaScript 的本地浏览器中打开此文件。</noscript>
+  </main>
+  <script>
+    "use strict";
+    const compiled = { exports: {} };
+    ((module, exports) => {
+      /* COMPILED_MOONBIT */
+    })(compiled, compiled.exports);
+    const examples = /* JSON_EXAMPLES */ null;
+    const byId = (id) => document.getElementById(id);
+    const inputs = { source: byId("source-file"), translation: byId("translation-file") };
+    const names = { source: byId("source-name"), translation: byId("translation-name") };
+    const state = { source:null, translation:null, mode:"example", report:null };
+    const version = { source:0, translation:0 };
+    function element(tag, text, cls) {
+      const node = document.createElement(tag);
+      node.textContent = text;
+      if (cls) node.className = cls;
+      return node;
+    }
+    function show() {
+      for (const side of Object.keys(inputs)) names[side].textContent = state[side]?.name || "未选择文件";
+      const list = byId("findings");
+      list.replaceChildren();
+      byId("save").disabled = true;
+      state.report = null;
+      if (!state.source || !state.translation) {
+        byId("status").textContent = "请选择原文和译文两份文件，选好后会自动检查。";
+        return;
+      }
+      const report = JSON.parse(compiled.exports.audit_json(state.source.text, state.translation.text));
+      state.report = report;
+      byId("save").disabled = false;
+      const origin = state.mode === "example" ? "内置示例" : "本地文件";
+      byId("status").textContent = origin + " · 已对照 " + report.checked + " 条消息 · " + report.errors + " 个错误 · " + report.warnings + " 条提示";
+      const ordered = [...report.findings].sort((a,b) => Number(b.severity === "error") - Number(a.severity === "error"));
+      for (const item of ordered) {
+        const row = element("li", "", "finding");
+        row.append(element("span", item.severity === "error" ? "错误" : "提示", "level " + item.severity));
+        const info = element("div", "");
+        const location = element("p", (item.side === "source" ? "原文" : "译文") + " / ", "where");
+        location.append(element("code", item.key || "整个文件"));
+        info.append(location, element("p", item.detail, "description"));
+        row.append(info);
+        list.append(row);
+      }
+      if (!report.findings.length) {
+        list.append(element("li", report.checked ? "本次对照通过。两份文件使用的运行时参数一致。" : "两份文件都没有可对照的消息。", "clear"));
+      }
+    }
+    function example(fixed) {
+      for (const side of Object.keys(inputs)) {
+        version[side] += 1;
+        inputs[side].value = "";
+      }
+      state.mode = "example";
+      state.source = { name:"示例 · en.json", text:examples.en };
+      state.translation = { name:fixed ? "示例 · zh-CN.fixed.json" : "示例 · zh-CN.review.json", text:fixed ? examples.fixed : examples.review };
+      show();
+    }
+    async function choose(side) {
+      const file = inputs[side].files[0];
+      if (!file) return;
+      if (state.mode === "example") {
+        state.source = null;
+        state.translation = null;
+        state.mode = "files";
+      }
+      const token = ++version[side];
+      state[side] = null;
+      show();
+      try {
+        const text = await file.text();
+        if (token !== version[side]) return;
+        state[side] = { name:file.name, text };
+        show();
+      } catch {
+        if (token === version[side]) byId("status").textContent = "读取文件失败，请重新选择 " + file.name + "。";
+      }
+    }
+    for (const side of Object.keys(inputs)) inputs[side].addEventListener("change", () => choose(side));
+    byId("review").addEventListener("click", () => example(false));
+    byId("fixed").addEventListener("click", () => example(true));
+    byId("save").addEventListener("click", () => {
+      if (!state.report) return;
+      const payload = { source:state.source.name, translation:state.translation.name, ...state.report };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"}));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "locale-check-report.json";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    example(false);
+  </script>
+</body>
+</html>
